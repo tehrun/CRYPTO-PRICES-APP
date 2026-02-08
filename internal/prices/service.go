@@ -2,6 +2,7 @@ package prices
 
 import (
     "encoding/json"
+    "fmt"
     "net/http"
 )
 
