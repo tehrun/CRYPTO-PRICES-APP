@@ -1,34 +1,47 @@
 package api
 
 import (
-    "net/http"
-    "github.com/gin-gonic/gin"
-    "crypto-prices-app/internal/prices"
+	"net/http"
+	"strings"
+
+	"crypto-prices-app/internal/prices"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-    PricesService *prices.PricesService
+	prices *prices.PricesService
 }
 
-func NewHandler(pricesService *prices.PricesService) *Handler {
-    return &Handler{PricesService: pricesService}
+func NewHandler(ps *prices.PricesService) *Handler {
+	return &Handler{prices: ps}
 }
 
 func (h *Handler) GetPrices(c *gin.Context) {
-    prices, err := h.PricesService.FetchPrices()
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-    c.JSON(http.StatusOK, prices)
+	response, err := h.prices.FetchPrices()
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": "failed to fetch prices"})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *Handler) GetPriceByID(c *gin.Context) {
-    id := c.Param("id")
-    price, err := h.PricesService.GetPrice(id)
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "Price not found"})
-        return
-    }
-    c.JSON(http.StatusOK, price)
+	id := strings.TrimSpace(c.Param("id"))
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing price id"})
+		return
+	}
+
+	price, err := h.prices.GetPrice(strings.ToUpper(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "price not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":    strings.ToLower(id),
+		"price": price,
+	})
 }

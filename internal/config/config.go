@@ -1,15 +1,17 @@
 package config
 
 import (
-	"os"
 	"log"
+	"os"
+
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Port         string
-	APIKey       string
-	DatabaseURL  string
+	Port        string
+	APIKey      string
+	DatabaseURL string
+	BaseURL     string
 }
 
 func LoadConfig() (*Config, error) {
@@ -19,9 +21,10 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
-		Port:         getEnv("PORT", "8080"),
-		APIKey:       getEnv("API_KEY", ""),
-		DatabaseURL:  getEnv("DATABASE_URL", ""),
+		Port:        getEnv("PORT", "8080"),
+		APIKey:      getEnv("API_KEY", ""),
+		DatabaseURL: getEnv("DATABASE_URL", ""),
+		BaseURL:     getEnv("PRICE_API_URL", "http://localhost:8081"),
 	}, nil
 }
 
